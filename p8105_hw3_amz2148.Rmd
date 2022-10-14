@@ -13,6 +13,25 @@ knitr::opts_chunk$set(echo = TRUE) #shows all code chunks
 
 ```{r load_libraries}
 library(tidyverse) #loads tidyverse package
-library(readxl) #loads readxl package
 ```
 
+# Problem 1
+
+
+# Problem 2
+
+
+
+```{r load_activity}
+activity = 
+  read_csv("data/accel_data.csv") %>% #loads csv file
+  janitor::clean_names() %>% #cleans variable names
+    pivot_longer(
+    activity_1:activity_1440,
+    names_to = "minute", 
+    values_to = "activity_lvl") %>% #tidies data into long format
+  mutate(day_type = case_when(day == "Saturday" | day == "Sunday" ~ "weekend", day != "Saturday" | day == "Sunday" ~ "weekday")) %>% #creates day_type variable
+  mutate(day = as.factor(day), day_type = as.factor(day_type), minute = as.factor(minute)) %>% #converts character variables to factor
+  select(week, day_id, day, day_type, minute, activity_lvl) %>% #reorders columns
+  arrange(week, day_id, minute)
+```
