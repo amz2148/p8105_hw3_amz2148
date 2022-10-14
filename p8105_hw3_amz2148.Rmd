@@ -33,5 +33,5 @@ activity =
   mutate(day_type = case_when(day == "Saturday" | day == "Sunday" ~ "weekend", day != "Saturday" | day == "Sunday" ~ "weekday")) %>% #creates day_type variable
   mutate(day = as.factor(day), day_type = as.factor(day_type), minute = as.factor(minute)) %>% #converts character variables to factor
   select(week, day_id, day, day_type, minute, activity_lvl) %>% #reorders columns
-  arrange(week, day_id, minute)
+  arrange(week, day_id, minute) #arranges data by certain observations
 ```
