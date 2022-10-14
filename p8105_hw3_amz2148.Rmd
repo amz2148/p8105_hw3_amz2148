@@ -1,0 +1,18 @@
+---
+title: "p8105_hw3_amz2148"
+output: github_document
+---
+
+Homework 3
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE) #shows all code chunks
+```
+
+# Problem 0
+
+```{r load_libraries}
+library(tidyverse) #loads tidyverse package
+library(readxl) #loads readxl package
+```
+
