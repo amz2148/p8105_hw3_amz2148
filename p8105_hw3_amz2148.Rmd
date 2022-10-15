@@ -5,14 +5,20 @@ output: github_document
 
 Homework 3
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE) #shows all code chunks
-```
-
 # Problem 0
 
 ```{r load_libraries}
 library(tidyverse) #loads tidyverse package
+```
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE) #shows all code chunks
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%")
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
 
 # Problem 1
@@ -20,7 +26,7 @@ library(tidyverse) #loads tidyverse package
 
 # Problem 2
 
-
+First, we load, tidy, and otherwise wrangle the data. The final dataset includes all originally observed variables and values; has useful variable names; includes a weekday vs weekend variable; and encodes data with reasonable variable classes.
 
 ```{r load_activity}
 activity = 
@@ -31,7 +37,50 @@ activity =
     names_to = "minute", 
     values_to = "activity_lvl") %>% #tidies data into long format
   mutate(day_type = case_when(day == "Saturday" | day == "Sunday" ~ "weekend", day != "Saturday" | day == "Sunday" ~ "weekday")) %>% #creates day_type variable
-  mutate(day = as.factor(day), day_type = as.factor(day_type), minute = as.factor(minute)) %>% #converts character variables to factor
+  mutate(minute = gsub("[A-z]","",minute))  %>% #removes "activity_" prefix from minute variable
+  mutate(day = as.factor(day), day_type = as.factor(day_type), minute = as.numeric(minute)) %>% #converts character variables to factor or dbl
   select(week, day_id, day, day_type, minute, activity_lvl) %>% #reorders columns
   arrange(week, day_id, minute) #arranges data by certain observations
 ```
+
+In the resulting dataset, there are ``r nrow(activity)`` rows (observations) and ``r ncol(activity)`` variables. The variables' names are ``r names(activity)``. The ``week`` variable assigns a numeric value to which week the observation is from, ranging from ``r min(activity$week, na.rm = TRUE)`` to ``r max(activity$week, na.rm = TRUE)``. The ``day_id`` variable assigns a numeric value to which day the observation is from, ranging from ``r min(activity$day_id, na.rm = TRUE)`` to ``r max(activity$day_id, na.rm = TRUE)``. The ``day`` variable states the day of the week associated with the observation and ``day_type`` states whether the observation occurred on a weekday or weekend. The ``minute`` variable shows what minute of the day the observation is from, ranging from ``r min(activity$minute, na.rm = TRUE)`` (starting at midnight) to ``r max(activity$minute, na.rm = TRUE)`` (just before midnight). Finally, the ``activity_lvl`` variable (with a median value of ``r median(activity$activity_lvl, na.rm = TRUE) ``) gives the activity count associated with each observation as measured by the accelerometer.
+
+
+Traditional analyses of accelerometer data focus on the total activity over the day. Using the tidied dataset, we aggregate across minutes to create a total activity variable for each day, and create a table showing these totals. 
+
+```{r aggregate_byday}
+activity %>% 
+  mutate(day = factor(day, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))) %>% 
+  group_by(week, day) %>% 
+  summarize(
+    total_activity = sum(activity_lvl)) %>% 
+  pivot_wider(
+    names_from = "day", 
+    values_from = "total_activity") %>% 
+  knitr::kable(digits = 0)
+```
+
+A table of total activity for each day reveals a few possible trends. The days toward the middle of each week (Tuesday, Wednesday, and Thursday) have fairly consistent, middle-of-the-range total activity levels (around 400,000 units per day). Meanwhile, the days at/around the weekend (Friday - Monday) have more variable total activity levels ranging from both very high (>600,000 units) to very low (around or less than 100,000 units). There are also a few days when likely no activity occurred (Saturday of weeks 4 and 5), evidenced by the fact that the total activity level was equal to 1440, which is the value outputted when every minute of the day had an activity level of 1. This may mean the individual was not wearing the accelerometer and thus this could be erroneous data. Furthermore, each week with the exception of week 4 has one day with an activity level above 600,000 units - suggesting that the day on which the individual may have not worn the device that week (Saturday) is the missing "highly active day" of this week (though this is by no means proven by the data).
+
+
+Finally, we create a single-panel plot that shows the 24-hour activity time courses for each day and uses color to indicate day of the week. 
+
+```{r activity_plot}
+activity %>% 
+  mutate(day = factor(day, levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))) %>% 
+  group_by(day, minute) %>% 
+  ggplot(aes(x = minute, y = activity_lvl)) + 
+    geom_line(aes(color = day), alpha = .4) +
+    theme(legend.position = "bottom") +
+  labs(
+    title = "Activity Count Every Minute by Day of the Week",
+    x = "Minute",
+    y = "Activity Count",
+    caption = "Data from Advanced Cardiac Care Center of Columbia University Medical Center.")
+
+```
+
+Based on this graph, one can see that most activity count values are fairly low, generally below ~2000 units each minute. There is also lower activity seen in the early parts of the day (before around minute 500). There are spikes throughout the day, but these are primarily clustered around the middle of the day (~minute 700) and in the evening (~minute 1250). Furthermore, when examining these aforementioned clustered spikes, we can see many noon spikes on Sundays and many evening spikes on Fridays. Meanwhile, other smaller patterns are visible as well, such as consistent medium-level spiking on Saturdays around minute 1000. These patterns could offer clues about the individual's daily habits and activities. For example, it is possible that the individual usually goes out on Friday nights and walks to lunch on Sundays. However, is seems less likely that the individual walks/cycles to work every day as there are no consistent weekday spikes around 9am (minute 540) and 5pm (1000), but perhaps the person does so on some days, since a few spikes are seen around those values. But to know detailed information such as this, we would need to know more about the person's activities, as the graph can only provide suggestions but not definitive conclusions, since many other variables could be contributing to the trends we see.
+
+
+
