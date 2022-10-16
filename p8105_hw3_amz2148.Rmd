@@ -27,7 +27,7 @@ theme_set(theme_minimal() + theme(legend.position = "bottom")) #sets default fig
 
 Problem 1 code fixed/updated using code answer key provided by Dr. Goldsmith.
 
-First, we load the ``instacart`` data from the p8105.datasets package.
+First, we load the ``instacart`` data from the ``p8105.datasets`` package.
 
 ```{r load_instacart}
 library(p8105.datasets) #loads p8105.datasets package
@@ -76,7 +76,7 @@ instacart %>%
   knitr::kable() #creates table
 ```
 
-Finally, we make a 2 x 7 table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week.
+Finally, we make a 2 x 7 table showing the mean hour of the day at which ``Pink Lady Apples`` and ``Coffee Ice Cream`` are ordered on each day of the week.
 
 ```{r mean_hour}
 instacart %>%
@@ -152,7 +152,7 @@ Based on this graph, one can see that most activity count values are fairly low,
 
 # Problem 3
 
-First, we load the NY NOAA dataset from the ``p8105.datasets`` package.
+First, we load the ``NY NOAA dataset`` from the ``p8105.datasets`` package.
 
 ```{r load_NOAA}
 library(p8105.datasets) #loads p8105.datasets package
